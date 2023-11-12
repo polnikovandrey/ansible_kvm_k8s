@@ -1,0 +1,44 @@
+---
+  - name: Удаление стенда kubernetes
+    hosts: localhost
+    become: true
+    vars_files:
+      - my_vars.yml
+    tasks:
+      - name: Получаем список существующих ВМ
+        community.libvirt.virt:
+          command: list_vms
+        register: existing_vms
+        changed_when: no
+
+      - name: Удаление машин
+        block:
+          - name: Полностью останавливаем ВМ
+            community.libvirt.virt:
+              command: destroy
+              name: "{{ item.name }}"
+            loop: "{{ vm_info.vm_names }}"
+            when: "item.name in existing_vms.list_vms"
+            ignore_errors: true
+
+          - name: Удаляем снапшоты
+            shell: |
+              virsh snapshot-delete --domain {{ item.name }} --snapshotname host_provision
+              virsh snapshot-delete --domain {{ item.name }} --snapshotname driver_provision
+            ignore_errors: true
+            loop: "{{ vm_info.vm_names }}"
+            when: "item.name in existing_vms.list_vms"
+
+          - name: Отменяем регистрацию ВМ
+            community.libvirt.virt:
+              command: undefine
+              name: "{{ item.name }}"
+            loop: "{{ vm_info.vm_names }}"
+            when: "item.name in existing_vms.list_vms"
+
+          - name: Удаление диска виртуальной машины
+            ansible.builtin.file:
+              path: "{{libvirt_pool_dir}}/{{ item.name }}.qcow2"
+              state: absent
+            loop: "{{ vm_info.vm_names }}"
+            when: "item.name in existing_vms.list_vms"

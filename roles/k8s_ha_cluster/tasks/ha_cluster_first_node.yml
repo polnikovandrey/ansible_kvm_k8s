@@ -1,0 +1,60 @@
+- name: Проверка наличия файла конфига
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: file_info
+
+- name: Инициализация кластера если конфиг не обнаружен.
+  block:
+    - name: Инициализация кластера для движков ['container-d', 'cri-o']
+      shell: |
+        kubeadm init \
+                --pod-network-cidr=10.244.0.0/16 \
+                --control-plane-endpoint "172.30.0.210:8888" \
+                --upload-certs
+      register: init_output_containerd_crio
+      when: engine in ['container-d', 'cri-o']
+
+
+    - name: Инициализация кластера для движка ['docker']
+      shell: |
+        kubeadm init \
+                --cri-socket unix:///var/run/cri-dockerd.sock \
+                --pod-network-cidr=10.244.0.0/16 \
+                --control-plane-endpoint "172.30.0.210:8888" \
+                --upload-certs
+      register: init_output_docker
+      when: engine == 'docker'
+
+    - name: Сохранение значения init_output для дальнейшего использования
+      set_fact:
+        init_output: "{{ init_output_containerd_crio if init_output_containerd_crio is defined and init_output_containerd_crio.stdout is defined else init_output_docker }}"
+
+    - name: Фильтрация вывода kubeadm init
+      set_fact:
+        filtered_output: "{{ init_output.stdout | regex_replace('(\\n|\\t|\\\\n|\\\\)', ' ') }}"
+
+    - name: Фильтр комманд для добавления управляющих и рабочих нод
+      set_fact:
+        control_plane_join_command: "{{ filtered_output | regex_search('kubeadm join(.*?--discovery-token-ca-cert-hash\\s+sha256:[\\w:]+.*?--control-plane.*?--certificate-key.*?[\\w:]+)')}}"
+        worker_join_command: "{{ filtered_output | regex_search('kubeadm join(.*?--discovery-token-ca-cert-hash\\s+sha256:[\\w:]+)')}}"
+
+    - name: Установка KUBECONFIG в enviroment
+      lineinfile:
+        dest: /etc/environment
+        line: 'export KUBECONFIG=/etc/kubernetes/admin.conf'
+
+    - name: Установка KUBECONFIG в bashrc
+      lineinfile:
+        dest: '~/.bashrc'
+        line: 'export KUBECONFIG=/etc/kubernetes/admin.conf'
+
+    - name: Подождем пока всё запустится
+      wait_for:
+        host: localhost
+        port: 6443
+        timeout: 300
+
+    - name: Установка сетевого плагина Flannel
+      shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+  when: not file_info.stat.exists
