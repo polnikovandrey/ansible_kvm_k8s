@@ -27,11 +27,18 @@
         tasks_from: create_nodes.yml
       vars:
         vm_name: "{{ item.name }}"
-        vm_vcpus: "{{ item.cpu }}"
+        vm_cpu: "{{ item.cpu }}"
         vm_ram_mb: "{{ item.memory }}"
         ipaddr: "{{ item.ipaddr }}"
+        mac: "{{ item.mac }}"
       with_items: "{{ vm_info.vm_names }}"
       when: variant == 'ha-cluster' or (variant == 'all-in-one' and item.name == 'node1')
+
+    - name: Вывод всех ВМ из списка
+      debug:
+        msg: "{{ hostvars[item].ansible_host }}"
+      when: variant == 'ha-cluster' or item == 'node1'
+      with_items: "{{ groups['all'] }}"
 
     - name: Ожидание загрузки всех ВМ из списка
       wait_for:
@@ -81,7 +88,7 @@
         tasks_from: install_docker_cri.yml
       when: engine == "docker"
 
-- name: Создаем снапшот driver_provision
+- name: Создаем snapshot driver_provision
   hosts: localhost
   become: yes
   tasks:
@@ -203,7 +210,7 @@
         force: yes
       become: true
 
-    - name: Установка KUBECONFIG в enviroment
+    - name: Установка KUBECONFIG в environment
       lineinfile:
         dest: /etc/environment
         line: 'export KUBECONFIG=/etc/kubernetes/admin.conf'

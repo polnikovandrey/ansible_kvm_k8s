@@ -33,12 +33,12 @@
       set_fact:
         filtered_output: "{{ init_output.stdout | regex_replace('(\\n|\\t|\\\\n|\\\\)', ' ') }}"
 
-    - name: Фильтр комманд для добавления управляющих и рабочих нод
+    - name: Фильтр команд для добавления управляющих и рабочих нод
       set_fact:
         control_plane_join_command: "{{ filtered_output | regex_search('kubeadm join(.*?--discovery-token-ca-cert-hash\\s+sha256:[\\w:]+.*?--control-plane.*?--certificate-key.*?[\\w:]+)')}}"
         worker_join_command: "{{ filtered_output | regex_search('kubeadm join(.*?--discovery-token-ca-cert-hash\\s+sha256:[\\w:]+)')}}"
 
-    - name: Установка KUBECONFIG в enviroment
+    - name: Установка KUBECONFIG в environment
       lineinfile:
         dest: /etc/environment
         line: 'export KUBECONFIG=/etc/kubernetes/admin.conf'

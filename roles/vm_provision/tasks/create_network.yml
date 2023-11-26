@@ -23,9 +23,8 @@
     - name: Запуск сети {{ vm_net }}
       command: virsh net-start {{ vm_net }}
 
-    - name: Автостарт сети {{ vm_net }}
+    - name: Авто-старт сети {{ vm_net }}
       command: virsh net-autostart {{ vm_net }}
   when: network_check.rc != 0
 
 -
-
