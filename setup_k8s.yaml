@@ -30,7 +30,6 @@
         vm_cpu: "{{ item.cpu }}"
         vm_ram_mb: "{{ item.memory }}"
         ipaddr: "{{ item.ipaddr }}"
-        mac: "{{ item.mac }}"
       with_items: "{{ vm_info.vm_names }}"
       when: variant == 'ha-cluster' or (variant == 'all-in-one' and item.name == 'node1')
 

@@ -1,7 +1,7 @@
 ---
 # defaults file for vm_provision
 base_image_name: debian-11-generic-amd64-20230124-1270.qcow2
-base_image_url: http://eclat.crans.org/cdimage-debian/cloud/bullseye/20230124-1270/{{ base_image_name }}
+base_image_url: https://cdimage.debian.org/cdimage/cloud/bullseye/20230124-1270/{{ base_image_name }}
 base_image_sha: 8db9abe8e68349081cc1942a4961e12fb7f94f460ff170c4bdd590a9203fbf83
 libvirt_pool_images: "/var/lib/libvirt/images"
 libvirt_pool_dir: "/var/lib/libvirt/vm"

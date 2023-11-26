@@ -26,12 +26,11 @@
   - name: Изменение размера виртуального диска
     shell: "qemu-img resize {{ libvirt_pool_dir }}/{{ vm_name }}.qcow2 10G"
 
-#  --run-command 'echo "source /etc/network/interfaces.d/*\nauto lo\niface lo inet loopback\nauto enp1s0\niface enp1s0 inet static\naddress {{ ipaddr }}\nnetmask 255.255.255.0\ngateway 172.30.0.1\ndns-nameservers 172.30.0.1" > /etc/network/interfaces'
-#  --hostname {{ vm_name }}.internal \
-
   - name: Начальное конфигурирование hostname:{{ vm_name }}, ip:{{ ipaddr }}
     command: |
       virt-customize -a {{ libvirt_pool_dir }}/{{ vm_name }}.qcow2 \
+      --run-command 'echo "source /etc/network/interfaces.d/*\nauto lo\niface lo inet loopback\nauto enp1s0\niface enp1s0 inet static\naddress {{ ipaddr }}\nnetmask 255.255.255.0\ngateway 172.30.0.1\ndns-nameservers 172.30.0.1" > /etc/network/interfaces'
+      --hostname {{ vm_name }}.internal \
       --run-command 'ssh-keygen -A'
 
     when: copy_results is changed
