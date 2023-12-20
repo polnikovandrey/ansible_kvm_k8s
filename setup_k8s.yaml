@@ -201,6 +201,12 @@
   hosts: localhost
   gather_facts: false
   tasks:
+    - name: Создание каталога /etc/kubernetes если не существует.
+      file:
+        path: /etc/kubernetes
+        state: directory
+      become: true
+
     - name: Переместить файл
       ansible.builtin.file:
         src: /tmp/admin.conf
@@ -213,6 +219,7 @@
       lineinfile:
         dest: /etc/environment
         line: 'export KUBECONFIG=/etc/kubernetes/admin.conf'
+      become: true
 
     - name: Установка KUBECONFIG в bashrc
       lineinfile:
