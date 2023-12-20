@@ -19,7 +19,7 @@
       when: engine == 'docker'
       register: kubeadm_output
 
-    - name: Установка KUBECONFIG в enviroment
+    - name: Установка KUBECONFIG в environment
       become: true
       lineinfile:
         dest: /etc/environment
@@ -56,5 +56,5 @@
 
 - name: Инициализация завершена.
   debug:
-    msg: 'Инициализация завершена! выполните комманду export KUBECONFIG=/etc/kubernetes/admin.conf, проверьте вывод команды kubectl get nodes'
+    msg: 'Инициализация завершена! выполните команду export KUBECONFIG=/etc/kubernetes/admin.conf, проверьте вывод команды kubectl get nodes'
   when: kubectl_output.rc == 0

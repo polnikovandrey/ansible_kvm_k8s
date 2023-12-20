@@ -20,11 +20,12 @@
     - name: Создание сети {{ vm_net }}
       command: virsh net-define /tmp/vm_network.xml
 
+    - name: Авто-старт сети {{ vm_net }}
+      command: virsh net-autostart {{ vm_net }}
+
     - name: Запуск сети {{ vm_net }}
       command: virsh net-start {{ vm_net }}
 
-    - name: Авто-старт сети {{ vm_net }}
-      command: virsh net-autostart {{ vm_net }}
   when: network_check.rc != 0
 
 -

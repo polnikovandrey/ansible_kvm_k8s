@@ -6,7 +6,8 @@
         </libosinfo:libosinfo>
     </metadata>
     <memory unit='MiB'>{{ vm_ram_mb }}</memory>
-    <currentMemory unit="KiB">1048576</currentMemory>
+{# TODO было так: <currentMemory unit="KiB">1048576</currentMemory> , но для node1 не хватало для старта kubeadm init. Нужно адресно увеличить размер для нод, на которых может инициализироваться кластер (node1?), остальным на старте много не надо. #}
+    <currentMemory unit="MiB">{{ vm_ram_mb }}</currentMemory>
     <vcpu placement='static'>{{ vm_cpu }}</vcpu>
     <os>
         <type arch="x86_64" machine="pc-q35-6.2">hvm</type>
