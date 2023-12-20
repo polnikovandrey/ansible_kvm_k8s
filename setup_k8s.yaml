@@ -61,7 +61,7 @@
 
 
 - name: Установка движка контейнеризации [cri-o, container-d, docker]
-  hosts: all
+  hosts: "{{ 'all' if variant == 'ha-cluster' else 'node1' }}"
   gather_facts: true
   become: true
   remote_user: root
@@ -104,7 +104,7 @@
 
 
 - name: Настройка kubernetes [all-in-one либо ha-cluster]
-  hosts: all
+  hosts: "{{ 'all' if variant == 'ha-cluster' else 'node1' }}"
   gather_facts: true
   become: true
   remote_user: root

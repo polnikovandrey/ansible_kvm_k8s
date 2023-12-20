@@ -10,7 +10,7 @@
     repo: 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ os }}/ /'
     filename: devel:kubic:libcontainers:stable.list
 
-- name: Установка репозитория cri-ostable/cri-o
+- name: Установка репозитория cri-o stable / cri-o
   apt_repository:
     repo: 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ version }}/{{ os }}/ /'
     filename: 'devel:kubic:libcontainers:stable:cri-o:{{ version }}.list'
