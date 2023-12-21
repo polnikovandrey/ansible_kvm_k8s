@@ -1,6 +1,23 @@
 ---
 # tasks file for vm_provision, создание snapshot
-- name: Создание snapshot {{ snapshot_name }}
+- name: Получение списка снапшотов домена {{ vm_name }}
+  command: virsh snapshot-list {{ vm_name }}
+  register: snapshot_list_output
+
+#- name: Проверка наличия снапшота {{ snapshot_name }} домена {{ vm_name }}
+#  shell: echo "{{ snapshot_list_output.stdout }}" | grep -w "{{ snapshot_name }}"
+#  ignore_errors: true
+#  failed_when: false
+#  register: snapshot_check
+
+#- name: Удаляем снапшот {{ snapshot_name }} домена {{ vm_name }} для обновления
+#  shell: "virsh snapshot-delete {{ vm_name }} --snapshotname {{ snapshot_name }}"
+#  when: snapshot_check.rc == 0
+
+- name: Удаляем снапшот {{ snapshot_name }} домена {{ vm_name }} для обновления
+  shell: "virsh snapshot-delete {{ vm_name }} --snapshotname {{ snapshot_name }}"
+  when: snapshot_list_output.stdout is search(snapshot_name)
+
+- name: Создание snapshot {{ snapshot_name }} домена {{ vm_name }}
   shell: "virsh snapshot-create-as --domain {{ vm_name }} --name {{ snapshot_name }} --description '{{ snapshot_description }}'"
   register: snapshot_create_status
-  ignore_errors: true

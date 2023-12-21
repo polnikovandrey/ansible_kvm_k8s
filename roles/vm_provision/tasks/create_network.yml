@@ -5,11 +5,6 @@
   command: virsh net-list --all
   register: net_list_output
 
-- name: Проверка наличия сети {{ vm_net }}
-  shell: echo "{{ net_list_output.stdout }}" | grep -w "{{ vm_net }}"
-  register: network_check
-  ignore_errors: true
-
 - name: Создание и настройка сети {{ vm_net }}
   block:
     - name: Копирование шаблона сети
@@ -26,6 +21,6 @@
     - name: Запуск сети {{ vm_net }}
       command: virsh net-start {{ vm_net }}
 
-  when: network_check.rc != 0
+  when: net_list_output.stdout is not search(vm_net)
 
 -
