@@ -54,7 +54,9 @@
         port: 6443
         timeout: 300
 
-    - name: Установка сетевого плагина Flannel
-      shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+    - name: Установка сетевого плагина (CNI)
+      include_role:
+        name: cni_provision
+        tasks_from: main.yml
 
   when: not file_info.stat.exists

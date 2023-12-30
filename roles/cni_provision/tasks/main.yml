@@ -1,0 +1,27 @@
+---
+# tasks file for cni_provision
+
+- name: Установка сетевого плагина Flannel
+  shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+  when: cni == "flannel"
+
+- name: Установка сетевого плагина Calico
+  block:
+    # https://docs.tigera.io/calico/latest/getting-started/kubernetes/self-managed-onprem/onpremises
+    - name: Установка tigera operator
+      shell: kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/tigera-operator.yaml
+    - name: Скачивание ресурсов, необходимых для
+      shell: curl https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/custom-resources.yaml -O
+    - name: Создание манифеста для установки Calico
+      shell: kubectl create -f custom-resources.yaml
+    # Verify Calico installation in your cluster.
+    # watch kubectl get pods -n calico-system
+    # You should see a result similar to the below.
+    # NAMESPACE     NAME                READY   STATUS                  RESTARTS         AGE
+    # kube-system   calico-node-txngh   1/1     Running                   0              54s
+
+    # https://docs.tigera.io/calico/latest/operations/calicoctl/install#install-calicoctl-as-a-kubernetes-pod
+    # See link above in order to know how to run calicoctl commands
+    - name: Установка calicoctl pod
+      shell: kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/calicoctl.yaml
+  when: cni == "calico"

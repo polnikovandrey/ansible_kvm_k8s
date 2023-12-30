@@ -37,9 +37,6 @@
         port: 6443
         timeout: 300
 
-    - name: Установка сетевого плагина Flannel
-      shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-
     - name: Снятие ограничения на запуск рабочих нагрузок c {{ ansible_hostname }}
       shell: "kubectl taint nodes --all node-role.kubernetes.io/control-plane-"
       become: true
@@ -47,6 +44,12 @@
       failed_when:
         - "'error: taint \"node-role.kubernetes.io/control-plane\" not found' not in taint_result.stderr"
         - "'node/' + ansible_hostname + '.internal untainted' not in taint_result.stdout"
+
+    - name: Установка сетевого плагина (CNI)
+      include_role:
+        name: cni_provision
+        tasks_from: main.yml
+
   when: not file_info.stat.exists
 
 - name: Проверка инициализации
