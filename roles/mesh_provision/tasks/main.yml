@@ -1,0 +1,46 @@
+---
+# tasks file for mesh_provision
+
+# https://www.tigera.io/blog/how-to-build-a-service-mesh-with-istio-and-calico/
+- name: Установка service mesh Istio
+  block:
+    - name: Скачивание istioctl
+      shell: curl -L https://git.io/getLatestIstio | ISTIO_VERSION=1.15.2 sh -
+
+    - name: Переход в директорию со скачанным istio
+      shell: cd istio-1.15.2
+
+    - name: Установка istio
+      shell: ./bin/istioctl install
+
+    - name: Переопределение начальной конфигурации, разрешающей нешифрованный трафик, mTLS становится обязательным.
+      shell: |
+        kubectl create -f - <<EOF \
+        apiVersion: security.istio.io/v1beta1 \
+        kind: PeerAuthentication \
+        metadata: \
+          name: default-strict-mode \
+          namespace: istio-system \
+        spec: \
+          mtls: \
+            mode: STRICT \
+        EOF
+
+    - name: Включение интеграции nodeagent Calico
+      shell: >
+        kubectl patch FelixConfiguration default
+         --type=merge
+         --patch='{"spec": {"policySyncPathPrefix": "/var/run/nodeagent"}}'
+
+    - name: Скачивание istio-sidecar-injector
+      shell: curl https://raw.githubusercontent.com/projectcalico/calico/de3a7ecfd07ca700564025a18dba1ee9f3761ad9/manifests/alp/istio-inject-configmap-1.15.yaml -o istio-inject-configmap.yaml
+
+    - name: Патч istio-sidecar-injector's configmap для интеграции Calico и Istio
+      shell: kubectl patch configmap -n istio-system istio-sidecar-injector --patch "$(cat istio-inject-configmap.yaml)"
+
+    - name: Создаётся Istio ServiceEntry для dikastes для автоматической коммуникации с Istio
+      shell: kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/alp/istio-app-layer-policy-envoy-v3.yaml
+
+    # TODO https://www.tigera.io/blog/how-to-build-a-service-mesh-with-istio-and-calico/ Routing the traffic with Istio ...
+
+  when: net_variant == "calico_istio"

@@ -3,7 +3,7 @@
 
 - name: Установка сетевого плагина Flannel
   shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-  when: cni == "flannel"
+  when: net_variant == "flannel_keepalived_haproxy"
 
 - name: Установка сетевого плагина Calico
   block:
@@ -24,4 +24,4 @@
     # See link above in order to know how to run calicoctl commands
     - name: Установка calicoctl pod
       shell: kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/calicoctl.yaml
-  when: cni == "calico"
+  when: net_variant == "calico_istio"

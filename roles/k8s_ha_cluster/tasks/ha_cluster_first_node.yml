@@ -12,7 +12,7 @@
                 --control-plane-endpoint "172.30.0.210:8888" \
                 --upload-certs
       register: init_output_containerd_crio
-      when: engine in ['container-d', 'cri-o']
+      when: cri_variant in ['container-d', 'cri-o']
 
 
     - name: Инициализация кластера для движка ['docker']
@@ -23,7 +23,7 @@
                 --control-plane-endpoint "172.30.0.210:8888" \
                 --upload-certs
       register: init_output_docker
-      when: engine == 'docker'
+      when: cri_variant == 'docker'
 
     - name: Сохранение значения init_output для дальнейшего использования
       set_fact:
@@ -57,6 +57,11 @@
     - name: Установка сетевого плагина (CNI)
       include_role:
         name: cni_provision
+        tasks_from: main.yml
+
+    - name: Установка service mesh
+      include_role:
+        name: mesh_provision
         tasks_from: main.yml
 
   when: not file_info.stat.exists

@@ -8,7 +8,7 @@
   block:
     - name: Инициализация кластера для движков ['container-d', 'cri-o']
       shell: kubeadm init --pod-network-cidr=10.244.0.0/16
-      when: engine in ['container-d', 'cri-o']
+      when: cri_variant in ['container-d', 'cri-o']
       register: kubeadm_output
 
     - name: Инициализация кластера для движка docker
@@ -16,7 +16,7 @@
         kubeadm init \
                --pod-network-cidr=10.244.0.0/16 \
                --cri-socket unix:///var/run/cri-dockerd.sock
-      when: engine == 'docker'
+      when: cri_variant == 'docker'
       register: kubeadm_output
 
     - name: Установка KUBECONFIG в environment
@@ -48,6 +48,11 @@
     - name: Установка сетевого плагина (CNI)
       include_role:
         name: cni_provision
+        tasks_from: main.yml
+
+    - name: Установка service mesh
+      include_role:
+        name: mesh_provision
         tasks_from: main.yml
 
   when: not file_info.stat.exists

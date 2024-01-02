@@ -21,13 +21,15 @@
     mode: 0660
   register: copy_results
 
+# TODO dynamic apt install
+# TODO dynamic etc/hosts
 - name: Первичная настройка шаблона.
   command: |
     virt-customize -a {{ libvirt_pool_images }}/template_with_common_settings.qcow2 \
     --root-password password:{{ vm_root_pass }} \
     --ssh-inject 'root:file:{{ ssh_key }}' \
     --uninstall cloud-init \
-    --run-command 'apt update && apt install -y ntpdate gnupg gnupg2 curl software-properties-common wget keepalived haproxy' \
+    --run-command 'apt update && apt install -y ntpdate gnupg gnupg2 curl software-properties-common wget{{ ' keepalived haproxy' if net_variant == 'flannel_keepalived_haproxy' else '' }}' \
     --append-line '/etc/hosts:172.30.0.201 node1.internal node1\n172.30.0.202 node2.internal node2\n172.30.0.203 node3.internal node3\n172.30.0.204 node4.internal node4\n172.30.0.205 node5.internal node5' \
     --run-command 'curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmour -o /etc/apt/trusted.gpg.d/cgoogle.gpg' \
     --run-command 'apt-add-repository "deb http://apt.kubernetes.io/ kubernetes-xenial main"' \

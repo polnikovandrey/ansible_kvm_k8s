@@ -31,12 +31,12 @@
         vm_ram_mb: "{{ item.memory }}"
         ipaddr: "{{ item.ipaddr }}"
       with_items: "{{ vm_info.vm_names }}"
-      when: variant == 'ha-cluster' or (variant == 'all-in-one' and item.name == 'node1')
+      when: cluster_variant == 'ha-cluster' or (cluster_variant == 'all-in-one' and item.name == 'node1')
 
     - name: Вывод всех ВМ из списка
       debug:
         msg: "{{ hostvars[item].ansible_host }}"
-      when: variant == 'ha-cluster' or item == 'node1'
+      when: cluster_variant == 'ha-cluster' or item == 'node1'
       with_items: "{{ groups['all'] }}"
 
     - name: Ожидание загрузки всех ВМ из списка
@@ -45,7 +45,7 @@
         port: 22
         timeout: 300
         state: started
-      when: variant == 'ha-cluster' or item == 'node1'
+      when: cluster_variant == 'ha-cluster' or item == 'node1'
       with_items: "{{ groups['all'] }}"
 
     - name: Создаем снимок host_provision
@@ -56,12 +56,12 @@
         vm_name: "{{ item.name }}"
         snapshot_name: "host_provision"
         snapshot_description: "Нода подготовлена к установке движка"
-      when: variant == 'ha-cluster' or item.name == 'node1'
+      when: cluster_variant == 'ha-cluster' or item.name == 'node1'
       with_items: "{{ vm_info.vm_names }}"
 
 
 - name: Установка движка контейнеризации [cri-o, container-d, docker]
-  hosts: "{{ 'all' if variant == 'ha-cluster' else 'node1' }}"
+  hosts: "{{ 'all' if cluster_variant == 'ha-cluster' else 'node1' }}"
   gather_facts: true
   become: true
   remote_user: root
@@ -73,19 +73,19 @@
       include_role:
         name: driver_provision
         tasks_from: install_crio.yml
-      when: engine == "cri-o"
+      when: cri_variant == "cri-o"
 
     - name: Установка container-d
       include_role:
         name: driver_provision
         tasks_from: install_container_d.yml
-      when: engine == "container-d"
+      when: cri_variant == "container-d"
 
     - name: Установка docker cri
       include_role:
         name: driver_provision
         tasks_from: install_docker_cri.yml
-      when: engine == "docker"
+      when: cri_variant == "docker"
 
 - name: Создаем snapshot driver_provision
   hosts: localhost
@@ -99,12 +99,12 @@
         vm_name: "{{ item.name }}"
         snapshot_name: "driver_provision"
         snapshot_description: "Движок установлен, нода подготовлена к инициализации k8s"
-      when: variant == 'ha-cluster' or item.name == 'node1'
+      when: cluster_variant == 'ha-cluster' or item.name == 'node1'
       with_items: "{{ vm_info.vm_names }}"
 
 
 - name: Настройка kubernetes [all-in-one либо ha-cluster]
-  hosts: "{{ 'all' if variant == 'ha-cluster' else 'node1' }}"
+  hosts: "{{ 'all' if cluster_variant == 'ha-cluster' else 'node1' }}"
   gather_facts: true
   become: true
   remote_user: root
@@ -113,19 +113,19 @@
       include_role:
         name: k8s_all_in_one
         tasks_from: all_in_one.yml
-      when: variant == "all-in-one" and inventory_hostname == 'node1'
+      when: cluster_variant == "all-in-one" and inventory_hostname == 'node1'
 
     - name: Подготовка нод для ha-cluster
       include_role:
         name: k8s_ha_cluster
         tasks_from: ha_cluster_prepare_managers.yml
-      when: variant == "ha-cluster"
+      when: cluster_variant == "ha-cluster"
 
     - name: Установка первой ноды
       include_role:
         name: k8s_ha_cluster
         tasks_from: ha_cluster_first_node.yml
-      when: variant == "ha-cluster" and inventory_hostname == 'node1' and inventory_hostname in groups['management']
+      when: cluster_variant == "ha-cluster" and inventory_hostname == 'node1' and inventory_hostname in groups['management']
       register: first_node_result
 
 
@@ -133,14 +133,14 @@
       set_fact:
         control_plane_join_command: "{{ hostvars['node1']['control_plane_join_command'] }}"
         worker_join_command: "{{ hostvars['node1']['worker_join_command'] }}"
-      when: variant == "ha-cluster" and inventory_hostname != 'node1'
+      when: cluster_variant == "ha-cluster" and inventory_hostname != 'node1'
 
     - name: вывод команд подключения
       debug:
         msg: |
           control_plane_join_command: {{ control_plane_join_command }}
           worker_join_command: {{ worker_join_command }}
-      when: variant == "ha-cluster" and inventory_hostname == 'node1'
+      when: cluster_variant == "ha-cluster" and inventory_hostname == 'node1'
 
     - name: Использование команды control_plane_join_command
       block:
@@ -151,7 +151,7 @@
           register: result
           retries: 5
           delay: 30
-          when: engine in ['container-d', 'cri-o']
+          when: cri_variant in ['container-d', 'cri-o']
 
         - name: Подключение управляющих нод для docker
           ansible.builtin.shell:
@@ -160,8 +160,8 @@
           register: result
           retries: 5
           delay: 30
-          when: engine == 'docker'
-      when: variant == "ha-cluster" and inventory_hostname != 'node1' and inventory_hostname in groups['management']
+          when: cri_variant == 'docker'
+      when: cluster_variant == "ha-cluster" and inventory_hostname != 'node1' and inventory_hostname in groups['management']
 
 
     - name: Использование команды worker_join_command
@@ -173,7 +173,7 @@
           register: result
           retries: 5
           delay: 30
-          when: engine in ['container-d', 'cri-o']
+          when: cri_variant in ['container-d', 'cri-o']
 
         - name: Подключение рабочих нод для docker
           ansible.builtin.shell:
@@ -182,8 +182,8 @@
           register: result
           retries: 5
           delay: 30
-          when: engine == 'docker'
-      when: variant == "ha-cluster" and inventory_hostname != 'node1' and inventory_hostname in groups['workers']
+          when: cri_variant == 'docker'
+      when: cluster_variant == "ha-cluster" and inventory_hostname != 'node1' and inventory_hostname in groups['workers']
 
     - name: Скачивание конфига с первой ноды (подходит для обоих вариантов all-in-one и ha-cluster)
       ansible.builtin.fetch:
