@@ -8,6 +8,8 @@ ssh_key: "/home/mcfly/.ssh/id_rsa.pub"
 ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
 version: "1.26"
 os: "Debian_11"
+
+# TODO vm_info -> inventory (https://stackoverflow.com/questions/71161444/ansible-merge-variable-values-into-new-variable)
 vm_info:
   vm_names:
     - name: node1
