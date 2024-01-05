@@ -1,39 +1,34 @@
+# Установка keepalived и haproxy (виртуальный IP и балансировка нагрузки)
+
 - name: Синхронизация даты/времени с NTP сервером
   shell: ntpdate 0.europe.pool.ntp.org
 
-- name: Установка keepalived и haproxy (виртуальный IP и балансировка нагрузки)
-  block:
-    - name: Копируем настройку демона keepalived
-      template:
-        src: templates/keepalived.conf.j2
-        dest: /etc/keepalived/keepalived.conf
-        mode: '0644'
+- name: Копируем настройку демона keepalived
+  template:
+    src: templates/keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    mode: '0644'
 
-    - name: Копируем скрипт check_apiserver.sh, предназначенный для проверки доступности серверов.
-      template:
-        src: templates/check_apiserver.sh.j2
-        dest: /etc/keepalived/check_apiserver.sh
-        mode: '0755'
+- name: Копируем скрипт check_apiserver.sh (проверка доступности серверов)
+  template:
+    src: templates/check_apiserver.sh.j2
+    dest: /etc/keepalived/check_apiserver.sh
+    mode: '0755'
 
-    - name: запуск службы keepalived
-      systemd:
-        name: keepalived
-        enabled: yes
-        state: restarted
+- name: запуск службы keepalived
+  systemd:
+    name: keepalived
+    enabled: yes
+    state: restarted
 
-    - name: Копируем настройку демона haproxy
-      template:
-        src: templates/haproxy.cfg.j2
-        dest: /etc/haproxy/haproxy.cfg
-        mode: '0644'
+- name: Копируем настройку демона haproxy
+  template:
+    src: templates/haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+    mode: '0644'
 
-    - name: запуск службы haproxy
-      systemd:
-        name: haproxy
-        enabled: yes
-        state: restarted
-  when: net_variant == "flannel_keepalived_haproxy"
-
-
-
-
+- name: запуск службы haproxy
+  systemd:
+    name: haproxy
+    enabled: yes
+    state: restarted

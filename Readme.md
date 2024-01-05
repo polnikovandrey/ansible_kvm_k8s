@@ -25,7 +25,7 @@
 ## Определение параметров развертывания в my_vars.yml
 - `cluster_variant` - вариантов установки `[all-in-one, ha-cluster]`
 - `cri_variant` - движок контейнеризации `[container-d, cri-o, docker]`
-- `net_variant` - вариант комбинации сетевых плагинов `[flannel_keepalived_haproxy, calico_istio]`
+- `net_variant` - вариант комбинации сетевых плагинов `[flannel, calico_istio]`
 - `libvirt_pool_images` - путь для хранения iso образа и шаблона
 - `libvirt_pool_dir` - путь для хранения виртуальных машин
 - `vm_net` - название сети для виртуальных машин 

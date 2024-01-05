@@ -3,7 +3,7 @@
 
 - name: Установка сетевого плагина Flannel
   shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-  when: net_variant == "flannel_keepalived_haproxy"
+  when: net_variant == "flannel"
 
 - name: Установка сетевого плагина Calico
   block:

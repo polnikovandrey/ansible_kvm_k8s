@@ -42,5 +42,6 @@
       shell: kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/alp/istio-app-layer-policy-envoy-v3.yaml
 
     # TODO https://www.tigera.io/blog/how-to-build-a-service-mesh-with-istio-and-calico/ Routing the traffic with Istio ...
+    # TODO https://istio.io/latest/docs/concepts/traffic-management/
 
   when: net_variant == "calico_istio"

@@ -197,11 +197,11 @@
       ansible.builtin.reboot:
         reboot_timeout: 300
 
-- name: Настройка хостовой машины, чтобы не лазить постоянно на виртуальные.
+- name: Настройка хостовой машины (чтобы не лазить постоянно на виртуальные)
   hosts: localhost
   gather_facts: false
   tasks:
-    - name: Создание каталога /etc/kubernetes если не существует.
+    - name: Создание каталога /etc/kubernetes если не существует
       file:
         path: /etc/kubernetes
         state: directory
