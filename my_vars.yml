@@ -1,4 +1,4 @@
-cluster_variant: ha-cluster #[all-in-one, ha-cluster]
+cluster_variant: all-in-one #[all-in-one, ha-cluster]
 cri_variant: cri-o #[container-d, cri-o, docker]
 net_variant: calico_istio #[flannel, calico_istio]
 libvirt_pool_images: "/var/lib/libvirt/images"
@@ -10,11 +10,12 @@ version: "1.26"
 os: "Debian_11"
 
 # TODO vm_info -> inventory (https://stackoverflow.com/questions/71161444/ansible-merge-variable-values-into-new-variable)
+# TODO investigate and tune memory/cpu for nodes with calico/istio in both cluster variants
 vm_info:
   vm_names:
     - name: node1
-      memory: 2048
-      cpu: 2
+      memory: 16384
+      cpu: 4
       ipaddr: 172.30.0.201
     - name: node2
       memory: 2048

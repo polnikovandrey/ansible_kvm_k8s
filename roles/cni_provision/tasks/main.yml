@@ -5,15 +5,50 @@
   shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
   when: net_variant == "flannel"
 
+# https://docs.tigera.io/calico/latest/getting-started/kubernetes/self-managed-onprem/onpremises
 - name: Установка сетевого плагина Calico
   block:
-    # https://docs.tigera.io/calico/latest/getting-started/kubernetes/self-managed-onprem/onpremises
     - name: Установка tigera operator
       shell: kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/tigera-operator.yaml
-    - name: Скачивание ресурсов, необходимых для
-      shell: curl https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/custom-resources.yaml -O
+
+#    - name: Скачивание ресурсов, необходимых для установки Calico
+#      shell: curl https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/custom-resources.yaml -O
+#
+#    TODO patch [cidr: 10.244.0.0/16] instead of hardcoded manifest creation
+#
+#    - name: Создание манифеста для установки Calico
+#      shell: kubectl create -f custom-resources.yaml
+
     - name: Создание манифеста для установки Calico
-      shell: kubectl create -f custom-resources.yaml
+      shell: |
+        kubectl create -f - <<EOF
+        # Source https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/custom-resources.yaml
+        # This section includes base Calico installation configuration.
+        # For more information, see: https://docs.tigera.io/calico/latest/reference/installation/api#operator.tigera.io/v1.Installation
+        apiVersion: operator.tigera.io/v1
+        kind: Installation
+        metadata:
+          name: default
+        spec:
+          # Configures Calico networking.
+          calicoNetwork:
+            # Note: The ipPools section cannot be modified post-install.
+            ipPools:
+              - blockSize: 26
+                cidr: 10.244.0.0/16
+                encapsulation: VXLANCrossSubnet
+                natOutgoing: Enabled
+                nodeSelector: all()
+        ---
+        # This section configures the Calico API server.
+        # For more information, see: https://docs.tigera.io/calico/latest/reference/installation/api#operator.tigera.io/v1.APIServer
+        apiVersion: operator.tigera.io/v1
+        kind: APIServer
+        metadata:
+          name: default
+        spec: {}
+        EOF
+
     # Verify Calico installation in your cluster.
     # watch kubectl get pods -n calico-system
     # You should see a result similar to the below.
@@ -22,6 +57,9 @@
 
     # https://docs.tigera.io/calico/latest/operations/calicoctl/install#install-calicoctl-as-a-kubernetes-pod
     # See link above in order to know how to run calicoctl commands
+    # TODO create calicoctl alias both on localhost and control plane nodes. Remove alias in remove_stand playbook.
+
     - name: Установка calicoctl pod
       shell: kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/calicoctl.yaml
+
   when: net_variant == "calico_istio"
