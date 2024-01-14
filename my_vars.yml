@@ -1,4 +1,4 @@
-cluster_variant: all-in-one #[all-in-one, ha-cluster]
+cluster_variant: ha-cluster #[all-in-one, ha-cluster]
 cri_variant: cri-o #[container-d, cri-o, docker]
 net_variant: calico_istio #[flannel, calico_istio]
 libvirt_pool_images: "/var/lib/libvirt/images"
@@ -14,22 +14,22 @@ os: "Debian_11"
 vm_info:
   vm_names:
     - name: node1
-      memory: 16384
-      cpu: 4
+      memory: 5120
+      cpu: 2
       ipaddr: 172.30.0.201
     - name: node2
-      memory: 2048
+      memory: 5120
       cpu: 2
       ipaddr: 172.30.0.202
     - name: node3
-      memory: 2048
+      memory: 5120
       cpu: 2
       ipaddr: 172.30.0.203
     - name: node4
-      memory: 3072
-      cpu: 4
+      memory: 5120
+      cpu: 2
       ipaddr: 172.30.0.204
     - name: node5
-      memory: 3072
-      cpu: 4
+      memory: 5120
+      cpu: 2
       ipaddr: 172.30.0.205

@@ -54,6 +54,15 @@
         port: 6443
         timeout: 300
 
+    - name: Снятие ограничения на запуск рабочих нагрузок c {{ ansible_hostname }}
+      shell: "kubectl taint nodes --all node-role.kubernetes.io/control-plane-"
+      become: true
+      register: taint_result
+      failed_when:
+        - "'error: taint \"node-role.kubernetes.io/control-plane\" not found' not in taint_result.stderr"
+        - "'node/' + ansible_hostname + '.internal untainted' not in taint_result.stdout"
+      when: net_variant == 'calico_istio' and inventory_hostname == 'node1'
+
     - name: Установка сетевого плагина (CNI)
       include_role:
         name: cni_provision
