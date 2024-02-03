@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{fragments/general :: head(title='Add User Form')}"></div>
+<body>
+<main>
+    <div th:replace="~{fragments/general :: navbar(addUserVisible=false)}"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-10 col-md-8 col-lg-6 offset-sm-1 offset-md-2 offset-lg-3">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h2>Add User Form</h2>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" th:action="@{/user/add}">
+                            <div class="row mb-3">
+                                <label class="col-form-label fw-bold" for="firstName">First Name</label>
+                                <input id="firstName" type="text" name="firstName" class="form-control" placeholder="Enter First Name" autocomplete="off"/>
+                            </div>
+                            <div class="row mb-3">
+                                <label class="col-form-label fw-bold" for="lastName">Last Name</label>
+                                <input id="lastName" type="text" name="lastName" class="form-control" placeholder="Enter Last Name" autocomplete="off"/>
+                            </div>
+                            <div class="row mb-3">
+                                <label class="col-form-label fw-bold" for="middleName">Middle Name</label>
+                                <input id="middleName" type="text" name="middleName" class="form-control" placeholder="Enter Middle Name" autocomplete="off"/>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label class="col-form-label fw-bold" for="username">Login</label>
+                                <input id="username" type="text" name="username" class="form-control" placeholder="Enter Login" autocomplete="off"/>
+                            </div>
+                            <div class="row mb-3">
+                                <label class="col-form-label fw-bold" for="email">Email</label>
+                                <input id="email" type="email" name="email" class="form-control" placeholder="Enter Email" autocomplete="off"/>
+                            </div>
+                            <div class="row mb-3">
+                                <label class="col-form-label fw-bold" for="password">Password</label>
+                                <input id="password" type="password" name="password" class="form-control" placeholder="Enter Password" autocomplete="off"/>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="form-check">
+                                    <input id="admin" type="checkbox" name="admin" class="form-check-input" value="false"/>
+                                    <label class="form-check-label fw-bold" for="admin">Admin</label>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <button type="submit" class="btn btn-primary mb-2">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<div th:replace="~{fragments/general :: bootstrap-js}"></div>
+</body>
+</html>

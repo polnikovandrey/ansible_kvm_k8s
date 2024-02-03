@@ -1,0 +1,93 @@
+version: '3.8'
+# TODO Spring State Machine
+# TODO Spring Config Server https://habr.com/ru/articles/712628/
+services:
+  sb3-backend:
+    image: sb3_backend:latest
+    build:
+      context: ./services/backend
+      dockerfile: production.Dockerfile
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/sb3_react?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider localhost:8080/actuator/health || exit 1
+      start_period: 3s
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  react-frontend:
+    image: react_frontend:latest
+    build:
+      context: ./services/frontend
+      dockerfile: production.Dockerfile
+    restart: always
+    ports:
+      - '8081:80'
+    volumes:
+      - /app/node_modules
+      - ./.react_frontend:/app
+    depends_on:
+      sb3-backend:
+        condition: service_healthy
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider localhost:80
+      start_period: 3s
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  db:
+    # PostgresSQL docker-compose https://habr.com/ru/articles/578744/
+    image: postgres:16.1
+    environment:
+      POSTGRES_DB: 'sb3_react'
+      POSTGRES_USER: 'root'
+      POSTGRES_PASSWORD: 'gjkybrjd'
+    ports:
+      - '5432:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
+      - ./services/backend/src/main/resources/db/script/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+# TODO Можно и даже нужно подложить конфиг вместо передачи переменных окружения
+#      - ./postgresql.conf:/var/lib/postgresql/data/postgresql.conf
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U root -d sb3_react" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 4G
+  rabbitmq:
+    # TODO Apache Kafka https://habr.com/ru/articles/738874/
+    image: rabbitmq:3.12.2-management
+    restart: always
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log_levels [{connection,error},{default,error}] disk_free_limit 2147483648
+    volumes:
+      - ./.rabbitmq:/var/lib/rabbitmq
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status"]
+      start_period: 3s
+      interval: 30s
+      timeout: 10s
+      retries: 3
+volumes:
+  db:
+    driver: local

@@ -1,6 +1,6 @@
-cluster_variant: ha-cluster #[all-in-one, ha-cluster]
+cluster_variant: all-in-one #[all-in-one, ha-cluster]
 cri_variant: cri-o #[container-d, cri-o, docker]
-net_variant: calico_istio #[flannel, calico_istio]
+net_variant: flannel #[flannel, calico_istio]
 libvirt_pool_images: "/var/lib/libvirt/images"
 libvirt_pool_dir: "/var/lib/libvirt/vm"
 vm_net: k8s_net
