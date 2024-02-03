@@ -1,0 +1,83 @@
+app:
+  cors:
+    allowedOrigins: http://localhost:3000
+  jwtCookieName: mcfly
+  # node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+  jwtSecret: 21107542ca08149e06e5cedf515e56d60cf7e64348abfcc32e6407b75f672aa4384c6ffaf9fce1801bc61f506a232c5921ec4705e69fd76f8aeeb0427d76a4ed
+  jwtExpirationInMs: 604800000
+# TODO restore messaging
+#  rabbitmq:
+#    queues:
+#      emailConfirmQueue:
+#        name: email-confirmation
+
+logging:
+  level:
+    ROOT: info
+    org:
+      hibernate:
+        engine.transaction.internal.TransactionImpl: debug
+        orm.jdbc.bind: trace
+        sql: debug
+      springframework:
+        orm.jpa: debug
+# TODO restore messaging
+#        messaging: trace
+#        messaging.simp: trace
+        security: trace
+        transaction: debug
+        web: trace
+
+
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/sb3_react?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    username: sb3_react_user
+    password: password
+  flyway:
+    user: sb3_react_admin
+    password: password
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+    time-zone: UTC
+  jpa:
+    database: postgresql
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        show_sql: true
+  liquibase:
+    user: sb3_react_admin
+    password: password
+#    enabled: false
+  mvc:
+    log-request-details: true
+  profiles:
+    default: dev
+# TODO restore messaging
+#  rabbitmq:
+#    host: localhost
+#    username: admin
+#    password: gjkybrjd
+#    port: 5672
+#    virtual-host: /
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: jdbc:mysql://mysql:3306/sb3_react?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+# TODO restore messaging
+#  rabbitmq:
+#    host: rmq
+app:
+  cors:
+    allowedOrigins: http://localhost:8081

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"/>
+    <title>Email confirmation success</title>
+</head>
+<body>
+<main>
+    <div class="container-fluid">
+        <div class="row mt-5">
+            <div class="col">
+                <p class="text-start" th:utext="'Email <b>' + ${email} + '</b> confirmation success!'"></p>
+            </div>
+        </div>
+    </div>
+</main>
+<script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+</body>
+</html>

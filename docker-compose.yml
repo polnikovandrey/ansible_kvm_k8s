@@ -5,7 +5,7 @@ services:
   sb3-backend:
     image: sb3_backend:latest
     build:
-      context: ./services/backend
+      context: ./services/back
       dockerfile: production.Dockerfile
     restart: always
     ports:
@@ -47,14 +47,14 @@ services:
     # PostgresSQL docker-compose https://habr.com/ru/articles/578744/
     image: postgres:16.1
     environment:
-      POSTGRES_DB: 'sb3_react'
+#      POSTGRES_DB: 'sb3_react'
       POSTGRES_USER: 'root'
       POSTGRES_PASSWORD: 'gjkybrjd'
     ports:
       - '5432:5432'
     volumes:
       - db:/var/lib/postgresql/data
-      - ./services/backend/src/main/resources/db/script/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+      - ./services/back/src/main/resources/db/script/setup.sql:/docker-entrypoint-initdb.d/setup.sql
 # TODO Можно и даже нужно подложить конфиг вместо передачи переменных окружения
 #      - ./postgresql.conf:/var/lib/postgresql/data/postgresql.conf
     healthcheck:
