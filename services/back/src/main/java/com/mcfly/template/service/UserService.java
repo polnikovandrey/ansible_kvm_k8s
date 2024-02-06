@@ -17,7 +17,6 @@ import com.mcfly.template.repository.user_role.UserRepository;
 import com.mcfly.template.security.UserPrincipal;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -40,11 +39,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-//    private final RabbitTemplate rabbitTemplate;
+    // TODO messaging
+    // private final RabbitTemplate rabbitTemplate;
     private final SimpMessagingTemplate wsTemplate;
 
-    @Value("${app.rabbitmq.queues.emailConfirmQueue.name}")
-    private String emailConfirmQueueName;   // TODO -> spring cloud config server
+    // TODO messaging
+    // @Value("${app.rabbitmq.queues.emailConfirmQueue.name}")
+    // private String emailConfirmQueueName;   // TODO -> spring cloud config server
 
     public UserDataResponse getCurrentUserData(UserPrincipal currentUser) {
         final Long id = currentUser.getId();

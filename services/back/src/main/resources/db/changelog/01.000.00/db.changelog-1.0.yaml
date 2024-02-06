@@ -1,0 +1,137 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: McFly
+      changes:
+        - createTable:
+            tableName: roles
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+                    unique: true
+  - changeSet:
+      id: 2
+      author: McFly
+      changes:
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: name
+                  value: 'ROLE_ADMIN'
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: name
+                  value: 'ROLE_USER'
+  - changeSet:
+      id: 3
+      author: McFly
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: username
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: email
+                  type: varchar(40)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: password
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: first_name
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_name
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: middle_name
+                  type: varchar(20)
+                  defaultValue: ''
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email_confirmed
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: datetime(6)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: datetime(6)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: bigint
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: 4
+      author: McFly
+      changes:
+        - createTable:
+            tableName: user_roles
+            columns:
+              - column:
+                  name: role_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            tableName: user_roles
+            columnNames: role_id, user_id
+        - addForeignKeyConstraint:
+            baseColumnNames: role_id
+            baseTableName: user_roles
+            constraintName: fk_user_roles_roles
+            referencedColumnNames: id
+            referencedTableName: roles
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: user_roles
+            constraintName: fk_user_roles_users
+            referencedColumnNames: id
+            referencedTableName: users

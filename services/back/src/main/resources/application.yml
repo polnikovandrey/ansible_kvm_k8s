@@ -37,9 +37,6 @@ spring:
     url: jdbc:postgresql://localhost:5432/sb3_react?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
     username: sb3_react_user
     password: password
-  flyway:
-    user: sb3_react_admin
-    password: password
   jackson:
     serialization:
       WRITE_DATES_AS_TIMESTAMPS: false
@@ -56,7 +53,8 @@ spring:
   liquibase:
     user: sb3_react_admin
     password: password
-#    enabled: false
+    change-log: db/changelog/db.changelog-master.yaml
+  #    enabled: false
   mvc:
     log-request-details: true
   profiles:
@@ -74,7 +72,7 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: jdbc:mysql://mysql:3306/sb3_react?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    url: jdbc:postgresql://postgresql:5432/sb3_react?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
 # TODO restore messaging
 #  rabbitmq:
 #    host: rmq
