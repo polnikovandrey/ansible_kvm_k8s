@@ -3,8 +3,8 @@ version: '3.8'
 # TODO Spring State Machine
 # TODO Dockerfile, production.Dockerfile migrate mvn -> gradle
 services:
-  sb3-backend:
-    image: sb3_backend:latest
+  back:
+    image: back:latest
     build:
       context: ./services/back
       dockerfile: production.Dockerfile
@@ -24,8 +24,8 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-  react-frontend:
-    image: react_frontend:latest
+  frontend:
+    image: frontend:latest
     build:
       context: ./services/frontend
       dockerfile: production.Dockerfile
@@ -34,7 +34,7 @@ services:
       - "8081:80"
     volumes:
       - /app/node_modules
-      - ./.react_frontend:/app
+      - ./.frontend:/app
     depends_on:
       sb3-backend:
         condition: service_healthy
@@ -44,7 +44,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-
   db:
     image: postgres:16.1
     environment:
@@ -67,8 +66,9 @@ services:
         limits:
           cpus: '1'
           memory: 4G
-
-  # TODO Apache Kafka https://habr.com/ru/articles/742786/
+  # TODO test Apache Kafka https://habr.com/ru/articles/742786/
+  # TODO spring-cloud-stream-kafka упрощает работу с кафкой
+  # TODO zookeeper -> raft официальная рекомендация с необходимостью миграции
   kafka:
     image: confluentinc/cp-kafka:6.2.4
     depends_on:
@@ -101,7 +101,7 @@ services:
       kafka-topics --bootstrap-server kafka:9092 --list
       
       echo -e 'Creating kafka topics'
-      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic send-order-event --replication-factor 1 --partitions 2
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic email-confirmation --replication-factor 1 --partitions 2
       
       echo -e 'Successfully created the following topics:'
       kafka-topics --bootstrap-server kafka:9092 --list

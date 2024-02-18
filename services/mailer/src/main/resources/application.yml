@@ -1,10 +1,19 @@
-app:
-  rabbitmq:
-    queues:
-      emailConfirmQueue:
-        name: email-confirmation
+topic:
+  email-confirmation: email-confirmation
 
 spring:
+  kafka:
+    bootstrap-servers: localhost:29092
+    consumer:
+      group-id: "order-1"
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: '*'
   mail:
     username: sbreact438@gmail.com
     password: tvodayulbisrhtmc
@@ -16,16 +25,8 @@ spring:
       starttls.enable: true
   profiles:
     default: dev
-  rabbitmq:
-    host: localhost
-    username: admin
-    password: gjkybrjd
-    port: 5672
-    virtual-host: /
 ---
 spring:
   config:
     activate:
       on-profile: prod
-  rabbitmq:
-    host: rmq
