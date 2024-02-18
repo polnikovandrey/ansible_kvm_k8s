@@ -1,4 +1,5 @@
 // Use [./gradlew bootRun -Pprod] to pass a 'prod' property value
+// TODO Open API
 var currentProfile = "dev"
 if (project.hasProperty("test")) {
 	currentProfile = "test"
@@ -31,9 +32,6 @@ repositories {
 	mavenCentral()
 }
 
-// TODO config server
-//extra["springCloudVersion"] = "2023.0.0"
-
 dependencies {
 	annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
 	annotationProcessor("org.projectlombok:lombok")
@@ -54,10 +52,6 @@ dependencies {
 	implementation("org.liquibase:liquibase-core")
 	implementation("org.mapstruct:mapstruct:1.5.5.Final")
 	implementation("org.projectlombok:lombok-mapstruct-binding:0.1.0")
-	// TODO config server
-	// implementation("org.springframework.cloud:spring-cloud-config-server")
-	// implementation("org.springframework.cloud:spring-cloud-starter-config")
-	// implementation("org.springframework.cloud:spring-cloud-starter-zookeeper-config")
 	implementation("org.springframework.kafka:spring-kafka")
 	implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6:3.1.2.RELEASE")
 	implementation("org.webjars:bootstrap:5.3.0")
@@ -87,8 +81,6 @@ dependencies {
 
 dependencyManagement {
 	imports {
-		// TODO config server
-		// mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
 		if (currentProfile == "test") {
 			mavenBom("org.yaml:snakeyaml:2.1")
 		}

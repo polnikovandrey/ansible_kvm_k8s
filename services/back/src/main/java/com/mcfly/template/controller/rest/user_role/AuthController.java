@@ -31,7 +31,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 @RequiredArgsConstructor
 public class AuthController {
 
-    // TODO Swagger
     // TODO https://www.bezkoder.com/spring-security-refresh-token/
 
     private final AuthenticationManager authenticationManager;

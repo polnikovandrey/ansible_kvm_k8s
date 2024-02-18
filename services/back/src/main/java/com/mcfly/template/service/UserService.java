@@ -1,14 +1,12 @@
 package com.mcfly.template.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mcfly.template.domain.user_role.Role;
 import com.mcfly.template.domain.user_role.RoleName;
 import com.mcfly.template.domain.user_role.User;
 import com.mcfly.template.exception.AppException;
 import com.mcfly.template.exception.ResourceNotFoundException;
 import com.mcfly.template.exception.UserExistsAlreadyException;
-import com.mcfly.template.payload.queue.EmailConfirmationPayload;
+import com.mcfly.template.payload.queue.EmailConfirmationEvent;
 import com.mcfly.template.payload.user_role.UserDataResponse;
 import com.mcfly.template.payload.user_role.UserIdentityAvailability;
 import com.mcfly.template.payload.ws.TextMessage;
@@ -39,13 +37,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-    // TODO messaging
-    // private final RabbitTemplate rabbitTemplate;
+    private final KafkaMessagingService kafkaMessagingService;
     private final SimpMessagingTemplate wsTemplate;
-
-    // TODO messaging
-    // @Value("${app.rabbitmq.queues.emailConfirmQueue.name}")
-    // private String emailConfirmQueueName;   // TODO -> spring cloud config server
 
     public UserDataResponse getCurrentUserData(UserPrincipal currentUser) {
         final Long id = currentUser.getId();
@@ -144,15 +137,12 @@ public class UserService {
                                     updatedUser.getRoles().stream().anyMatch(role -> RoleName.ROLE_ADMIN == role.getName()));
     }
 
-    public void sendEmailConfirmation(String url, String email) throws JsonProcessingException {
+    public void sendEmailConfirmation(String url, String email) {
         final String confirmationCode = passwordEncoder.encode(email);
         final String emailEncoded = URLEncoder.encode(email, StandardCharsets.UTF_8);
         final String confirmationCodeEncoded = URLEncoder.encode(confirmationCode, StandardCharsets.UTF_8);
         final String confirmationUrl = String.format("%s/user/confirmEmail?email=%s&code=%s", url, emailEncoded, confirmationCodeEncoded);
-        final EmailConfirmationPayload emailConfirmationPayload = new EmailConfirmationPayload(email, confirmationUrl);
-        final String queuePayload = new ObjectMapper().writeValueAsString(emailConfirmationPayload);
-        // TODO restore messaging
-        // rabbitTemplate.convertAndSend(emailConfirmQueueName, queuePayload);
+        kafkaMessagingService.sendEmailConfirmation(new EmailConfirmationEvent(email, confirmationUrl));
     }
 
     @Transactional

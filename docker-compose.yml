@@ -1,6 +1,7 @@
 version: '3.8'
+# TODO Pass credentials as environment variables https://morioh.com/a/3fe99c4391e4/build-spring-microservices-and-dockerize-them-for-production https://habr.com/ru/articles/712628/
 # TODO Spring State Machine
-# TODO Spring Config Server https://habr.com/ru/articles/712628/
+# TODO Dockerfile, production.Dockerfile migrate mvn -> gradle
 services:
   sb3-backend:
     image: sb3_backend:latest
@@ -30,7 +31,7 @@ services:
       dockerfile: production.Dockerfile
     restart: always
     ports:
-      - '8081:80'
+      - "8081:80"
     volumes:
       - /app/node_modules
       - ./.react_frontend:/app
@@ -43,20 +44,17 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
   db:
-    # PostgresSQL docker-compose https://habr.com/ru/articles/578744/
     image: postgres:16.1
     environment:
-#      POSTGRES_DB: 'sb3_react'
       POSTGRES_USER: 'root'
       POSTGRES_PASSWORD: 'gjkybrjd'
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - db:/var/lib/postgresql/data
       - ./services/back/src/main/resources/db/script/setup.sql:/docker-entrypoint-initdb.d/setup.sql
-# TODO Можно и даже нужно подложить конфиг вместо передачи переменных окружения
-#      - ./postgresql.conf:/var/lib/postgresql/data/postgresql.conf
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U root -d sb3_react" ]
       interval: 10s
@@ -69,25 +67,70 @@ services:
         limits:
           cpus: '1'
           memory: 4G
-  rabbitmq:
-    # TODO Apache Kafka https://habr.com/ru/articles/738874/
-    image: rabbitmq:3.12.2-management
-    restart: always
-    environment:
-      - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFAULT_PASS=admin
-      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log_levels [{connection,error},{default,error}] disk_free_limit 2147483648
-    volumes:
-      - ./.rabbitmq:/var/lib/rabbitmq
+
+  # TODO Apache Kafka https://habr.com/ru/articles/742786/
+  kafka:
+    image: confluentinc/cp-kafka:6.2.4
+    depends_on:
+      zookeeper:
+        condition: service_healthy
     ports:
-      - '5672:5672'
-      - '15672:15672'
+      - "29092:29092"
     healthcheck:
-      test: [ "CMD", "rabbitmqctl", "status"]
-      start_period: 3s
-      interval: 30s
-      timeout: 10s
+      test: [ "CMD", "nc", "-vz", "localhost", "9092" ]
+      interval: 10s
+      timeout: 3s
       retries: 3
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: OUTSIDE://:29092,INTERNAL://:9092
+      KAFKA_ADVERTISED_LISTENERS: OUTSIDE://localhost:29092,INTERNAL://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  kafka-topics-generator:
+    image: confluentinc/cp-kafka:6.2.4
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics --bootstrap-server kafka:9092 --list
+      
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic send-order-event --replication-factor 1 --partitions 2
+      
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server kafka:9092 --list
+      "
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8090:8080"
+    restart: always
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+  zookeeper:
+    image: confluentinc/cp-zookeeper:6.2.4
+    healthcheck:
+      test: [ "CMD", "nc", "-vz", "localhost", "2181" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "22181:2181"
+
 volumes:
   db:
     driver: local
