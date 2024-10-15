@@ -1,18 +1,12 @@
-FROM amazoncorretto:20-alpine-jdk as build
-WORKDIR /workspace/app
-
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
+FROM amazoncorretto:21-alpine-jdk AS build
+WORKDIR /app
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle.kts .
 COPY src src
+RUN ./gradlew bootJar
 
-RUN ./mvnw install -DskipTests
-RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
-
-FROM amazoncorretto:20-alpine-jdk
-VOLUME /tmp
-ARG DEPENDENCY=/workspace/app/target/dependency
-COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
-COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
-COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
-ENTRYPOINT ["java","-cp","app:app/lib/*","com.mcfly.mailer.MailerApplication"]
+FROM amazoncorretto:21-alpine AS runtime
+WORKDIR /app
+COPY --from=build /app/build/libs/*.jar /app/app.jar
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

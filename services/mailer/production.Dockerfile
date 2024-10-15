@@ -1,20 +1,14 @@
-FROM amazoncorretto:20-alpine-jdk as build
-WORKDIR /workspace/app
-
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
+FROM amazoncorretto:21-alpine-jdk AS build
+WORKDIR /app
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle.kts .
 COPY src src
+RUN ./gradlew bootJar -Pprod
 
-RUN ./mvnw install -P prod -DskipTests
-RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
-
-FROM amazoncorretto:20-alpine-jdk
-VOLUME /tmp
-ARG DEPENDENCY=/workspace/app/target/dependency
-COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
-COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
-COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
+FROM amazoncorretto:21-alpine AS runtime
+WORKDIR /app
+COPY --from=build /app/build/libs/*.jar /app/app.jar
 EXPOSE 8080
 HEALTHCHECK --start-period=5s --interval=30s --timeout=10s --retries=5 CMD wget --no-verbose --tries=1 --spider localhost:8080/actuator/health || exit 1
-ENTRYPOINT ["java","-Dspring.profiles.active=prod","-cp","app:app/lib/*","com.mcfly.template.Sb3Application"]
+ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "/app/app.jar"]

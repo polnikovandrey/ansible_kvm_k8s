@@ -1,7 +1,6 @@
 version: '3.8'
 # TODO Pass credentials as environment variables https://morioh.com/a/3fe99c4391e4/build-spring-microservices-and-dockerize-them-for-production https://habr.com/ru/articles/712628/
 # TODO Spring State Machine
-# TODO Dockerfile, production.Dockerfile migrate mvn -> gradle
 services:
   back:
     image: back:latest

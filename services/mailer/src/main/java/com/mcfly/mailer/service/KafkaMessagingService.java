@@ -20,7 +20,7 @@ public class KafkaMessagingService {
     @KafkaListener(
             topics = topicCreateOrder,
             groupId = kafkaConsumerGroupId,
-            properties = {"spring.json.value.default.type=com.mcfly.template.payload.queue.EmailConfirmationEvent"}
+            properties = {"spring.json.value.default.type=com.mcfly.mailer.payload.queue.EmailConfirmationEvent"}
     )
     public EmailConfirmationEvent createOrder(EmailConfirmationEvent emailConfirmationEvent) throws MessagingException {
         log.info("Message consumed {}", emailConfirmationEvent);
